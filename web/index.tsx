@@ -10,10 +10,11 @@ import {
   getAccountSigningKey,
   getAttributeCommitmentRandomness,
 } from './wasm/index_bg.js';
-import {Buffer} from 'buffer';
 
 window.onload = function () {
-  window.ReactNativeWebView?.postMessage(JSON.stringify({type: 'ready'}));
+  window.ReactNativeWebView?.postMessage(
+    JSON.stringify({type: 'ready', message: {type: 'ready'}}),
+  );
 };
 
 // getAccountSigningKey
@@ -109,9 +110,9 @@ const GetAccountPublicKey = ({seedAsHex}: {seedAsHex: string}) => {
     const pubKey = getAccountPublicKey(seedAsHex, 'Testnet', 0, 0, 0).toString(
       'hex',
     );
-    postMessage({ 
+    postMessage({
       result: pubKey,
-      type: CCDCryptoMethods.getAccountPublicKey
+      type: CCDCryptoMethods.getAccountPublicKey,
     });
   } catch (error) {
     alert(error);
@@ -125,9 +126,9 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
   try {
     const idCredSec = getIdCredSec(seedAsHex, 'Testnet', 0, 0).toString('hex');
 
-    postMessage({ 
+    postMessage({
       result: idCredSec,
-      type: CCDCryptoMethods.getIdCredSec
+      type: CCDCryptoMethods.getIdCredSec,
     });
   } catch (error) {
     window.ReactNativeWebView?.postMessage(
@@ -138,8 +139,8 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
 
 document.addEventListener('message', async function (event: any) {
   let data = event.data;
-  if(data) {
-    data = JSON.parse(data)
+  if (data) {
+    data = JSON.parse(data);
   }
 
   switch (data.method) {
