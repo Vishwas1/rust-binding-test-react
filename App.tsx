@@ -5,10 +5,10 @@
  * @format
  */
 
-import React, {useRef} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WebView from 'react-native-webview';
-import {mnemonicToSeedSync} from '@scure/bip39';
+import { mnemonicToSeedSync } from '@scure/bip39';
 
 enum CCDCryptoMethods {
   getAccountSigningKey = 'getAccountSigningKey',
@@ -29,7 +29,7 @@ function App(): JSX.Element {
     try {
       console.log(event.nativeEvent.data);
       let data = event.nativeEvent.data
-      if(data) {
+      if (data) {
         data = JSON.parse(data)
       }
 
@@ -60,11 +60,11 @@ function App(): JSX.Element {
   const sendMesageToWebView = () => {
 
 
-  const seedAsHex = Buffer.from(
-        mnemonicToSeedSync(
-          'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
-        ),
-      ).toString('hex');
+    const seedAsHex = Buffer.from(
+      mnemonicToSeedSync(
+        'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
+      ),
+    ).toString('hex');
 
 
     if (webviewRef.current) {
@@ -90,7 +90,7 @@ function App(): JSX.Element {
   };
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <TouchableOpacity
         style={styles.sectionContainer}
         onPress={sendMesageToWebView}>
@@ -105,7 +105,7 @@ function App(): JSX.Element {
         allowUniversalAccessFromFileURLs={true} // Android only
         startInLoadingState={true}
         onMessage={handleMessage}
-        source={{uri: 'file:///android_asset/index.html'}}
+        source={{ uri: 'file:///android_asset/index.html' }}
       />
     </View>
   );
