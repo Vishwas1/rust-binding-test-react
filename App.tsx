@@ -8,13 +8,47 @@
 import React, {useRef} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import WebView from 'react-native-webview';
+import {mnemonicToSeedSync} from '@scure/bip39';
+
+enum CCDCryptoMethods {
+  getAccountSigningKey = 'getAccountSigningKey',
+  getAccountPublicKey = 'getAccountPublicKey',
+  getPrfKey = 'getPrfKey',
+  getIdCredSec = 'getIdCredSec',
+  getSignatureBlindingRandomness = 'getSignatureBlindingRandomness',
+  getAttributeCommitmentRandomness = 'getAttributeCommitmentRandomness',
+}
+
 
 function App(): JSX.Element {
   const webviewRef = useRef(null);
 
+
+
   const handleMessage = event => {
     try {
       console.log(event.nativeEvent.data);
+      let data = event.nativeEvent.data
+      if(data) {
+        data = JSON.parse(data)
+      }
+
+      switch (data.message.type) {
+        case CCDCryptoMethods.getAccountPublicKey: {
+          console.log(data.message.result)
+          break
+        }
+
+        case CCDCryptoMethods.getIdCredSec: {
+          console.log(data.message.result)
+          break
+        }
+
+        default: {
+          console.log('Inside handleMessage default case')
+        }
+
+      }
 
       // Display result, save it, etc.
       // Send data to React WebView
@@ -24,11 +58,32 @@ function App(): JSX.Element {
   };
 
   const sendMesageToWebView = () => {
+
+
+  const seedAsHex = Buffer.from(
+        mnemonicToSeedSync(
+          'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
+        ),
+      ).toString('hex');
+
+
     if (webviewRef.current) {
       webviewRef.current.postMessage(
         JSON.stringify({
-          type: 'success',
-          message: 'get me keys',
+          method: CCDCryptoMethods.getAccountPublicKey,
+          params: {
+            seedAsHex: seedAsHex
+          }
+        }),
+      );
+
+
+      webviewRef.current.postMessage(
+        JSON.stringify({
+          method: CCDCryptoMethods.getIdCredSec,
+          params: {
+            seedAsHex: seedAsHex
+          }
         }),
       );
     }
