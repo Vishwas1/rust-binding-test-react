@@ -137,6 +137,50 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
   }
 };
 
+const GetPrfKey = ({ seedAsHex }: { seedAsHex: string }) => {
+  try {
+    const privKey = getPrfKey(seedAsHex, 'Testnet', 0, 0).toString('hex');
+
+    postMessage({
+      result: privKey,
+      type: CCDCryptoMethods.getPrfKey,
+    });
+  } catch (error) {
+    window.ReactNativeWebView?.postMessage(
+      JSON.stringify({ type: 'error', message: error }),
+    );
+  }
+};
+const GetSignatureBlindingRandomness = ({ seedAsHex }: { seedAsHex: string }) => {
+  try {
+    const randomSignature = getSignatureBlindingRandomness(seedAsHex, 'Testnet', '', 0, 0).toString('hex');
+
+    postMessage({
+      result: randomSignature,
+      type: CCDCryptoMethods.getSignatureBlindingRandomness,
+    });
+  } catch (error) {
+    window.ReactNativeWebView?.postMessage(
+      JSON.stringify({ type: 'error', message: error }),
+    );
+  }
+};
+
+const GetAttributeCommitmentRandomness = ({ seedAsHex }: { seedAsHex: string }) => {
+  try {
+    const randomSignature = getAttributeCommitmentRandomness(seedAsHex, 'Testnet', 0, 0, 0, 0).toString('hex');
+
+    postMessage({
+      result: randomSignature,
+      type: CCDCryptoMethods.getAttributeCommitmentRandomness,
+    });
+  } catch (error) {
+    window.ReactNativeWebView?.postMessage(
+      JSON.stringify({ type: 'error', message: error }),
+    );
+  }
+};
+
 document.addEventListener('message', async function (event: any) {
   let data = event.data;
   if (data) {
@@ -152,6 +196,16 @@ document.addEventListener('message', async function (event: any) {
       GetIdCredSec(data.params);
       break;
     }
+    case CCDCryptoMethods.getPrfKey: {
+      GetPrfKey(data.params)
+    }
+    case CCDCryptoMethods.getSignatureBlindingRandomness: {
+      GetSignatureBlindingRandomness(data.params)
+    }
+    case CCDCryptoMethods.getAttributeCommitmentRandomness: {
+      GetAttributeCommitmentRandomness(data.params)
+    }
+
     default: {
     }
   }

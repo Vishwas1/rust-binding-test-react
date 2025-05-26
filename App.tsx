@@ -5,11 +5,11 @@
  * @format
  */
 
-import React, {useRef} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import WebView from 'react-native-webview';
-import {mnemonicToSeedSync} from '@scure/bip39';
-import {Buffer} from 'buffer';
+import { mnemonicToSeedSync } from '@scure/bip39';
+import { Buffer } from 'buffer';
 
 enum CCDCryptoMethods {
   getAccountSigningKey = 'getAccountSigningKey',
@@ -32,12 +32,28 @@ function App(): JSX.Element {
       }
 
       switch (data.message.type) {
+        case CCDCryptoMethods.getAccountSigningKey: {
+          console.log(data.message.result);
+          break;
+        }
         case CCDCryptoMethods.getAccountPublicKey: {
+          console.log(data.message.result);
+          break;
+        }
+        case CCDCryptoMethods.getPrfKey: {
           console.log(data.message.result);
           break;
         }
 
         case CCDCryptoMethods.getIdCredSec: {
+          console.log(data.message.result);
+          break;
+        }
+        case CCDCryptoMethods.getSignatureBlindingRandomness: {
+          console.log(data.message.result);
+          break;
+        }
+        case CCDCryptoMethods.getAttributeCommitmentRandomness: {
           console.log(data.message.result);
           break;
         }
@@ -79,11 +95,38 @@ function App(): JSX.Element {
           },
         }),
       );
+
+
+      webviewRef.current.postMessage(
+        JSON.stringify({
+          method: CCDCryptoMethods.getPrfKey,
+          params: {
+            seedAsHex: seedAsHex,
+          },
+        }),
+      );
+
+      webviewRef.current.postMessage(
+        JSON.stringify({
+          method: CCDCryptoMethods.getSignatureBlindingRandomness,
+          params: {
+            seedAsHex: seedAsHex,
+          },
+        }),
+      );
+      webviewRef.current.postMessage(
+        JSON.stringify({
+          method: CCDCryptoMethods.getAttributeCommitmentRandomness,
+          params: {
+            seedAsHex: seedAsHex,
+          },
+        }),
+      );
     }
   };
 
   return (
-    <View style={{flex: 1}}>
+    <View style={{ flex: 1 }}>
       <TouchableOpacity
         style={styles.sectionContainer}
         onPress={sendMesageToWebView}>
@@ -98,7 +141,7 @@ function App(): JSX.Element {
         allowUniversalAccessFromFileURLs={true} // Android only
         startInLoadingState={true}
         onMessage={handleMessage}
-        source={{uri: 'file:///android_asset/index.html'}}
+        source={{ uri: 'file:///android_asset/index.html' }}
       />
     </View>
   );

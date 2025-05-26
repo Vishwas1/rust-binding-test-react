@@ -5,6 +5,7 @@ This is a React Native project.
 ## Prerequisites
 
 - Node.js version: 20.18.3
+- Java jdk version: >=21
 
 ## Getting Started
 
