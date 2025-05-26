@@ -6,72 +6,69 @@
  */
 
 import React, { useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import WebView from 'react-native-webview';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { Buffer } from 'buffer';
 
 enum CCDCryptoMethods {
-  getAccountSigningKey = 'getAccountSigningKey',
-  getAccountPublicKey = 'getAccountPublicKey',
-  getPrfKey = 'getPrfKey',
-  getIdCredSec = 'getIdCredSec',
-  getSignatureBlindingRandomness = 'getSignatureBlindingRandomness',
-  getAttributeCommitmentRandomness = 'getAttributeCommitmentRandomness',
+  GetAccountSigningKey = 'getAccountSigningKey',
+  GetAccountPublicKey = 'getAccountPublicKey',
+  GetPrfKey = 'getPrfKey',
+  GetIdCredSec = 'getIdCredSec',
+  GetSignatureBlindingRandomness = 'getSignatureBlindingRandomness',
+  GetAttributeCommitmentRandomness = 'getAttributeCommitmentRandomness',
 }
 
 function App(): JSX.Element {
   const webviewRef = useRef(null);
 
-  const handleMessage = event => {
+  const handleMessage = (event: any) => {
     try {
       console.log('global Log', event.nativeEvent.data);
       let data = event.nativeEvent.data;
       if (data) {
         data = JSON.parse(data);
       }
+      // handle error here.
 
-      switch (data.message.type) {
-        case CCDCryptoMethods.getAccountSigningKey: {
+      // if no error then ...
+      switch (data.message.method) {
+        case CCDCryptoMethods.GetAccountSigningKey: {
           console.log(data.message.result);
           break;
         }
-        case CCDCryptoMethods.getAccountPublicKey: {
+        case CCDCryptoMethods.GetAccountPublicKey: {
           console.log(data.message.result);
           break;
         }
-        case CCDCryptoMethods.getPrfKey: {
+        case CCDCryptoMethods.GetPrfKey: {
           console.log(data.message.result);
           break;
         }
-
-        case CCDCryptoMethods.getIdCredSec: {
+        case CCDCryptoMethods.GetIdCredSec: {
           console.log(data.message.result);
           break;
         }
-        case CCDCryptoMethods.getSignatureBlindingRandomness: {
+        case CCDCryptoMethods.GetSignatureBlindingRandomness: {
           console.log(data.message.result);
           break;
         }
-        case CCDCryptoMethods.getAttributeCommitmentRandomness: {
+        case CCDCryptoMethods.GetAttributeCommitmentRandomness: {
           console.log(data.message.result);
           break;
         }
-
         default: {
           console.log('Inside handleMessage default case');
         }
       }
-
-      // Display result, save it, etc.
-      // Send data to React WebView
     } catch (e) {
       console.error(e.message);
     }
   };
 
   const sendMesageToWebView = () => {
-    const seedAsHex = Buffer.from(
+    const seedAsHex =  Buffer.from(
       mnemonicToSeedSync(
         'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
       ),
@@ -80,7 +77,7 @@ function App(): JSX.Element {
     if (webviewRef.current) {
       webviewRef.current.postMessage(
         JSON.stringify({
-          method: CCDCryptoMethods.getAccountPublicKey,
+          method: CCDCryptoMethods.GetAccountPublicKey,
           params: {
             seedAsHex: seedAsHex,
           },
@@ -99,7 +96,7 @@ function App(): JSX.Element {
 
       webviewRef.current.postMessage(
         JSON.stringify({
-          method: CCDCryptoMethods.getPrfKey,
+          method: CCDCryptoMethods.GetPrfKey,
           params: {
             seedAsHex: seedAsHex,
           },
@@ -108,7 +105,7 @@ function App(): JSX.Element {
 
       webviewRef.current.postMessage(
         JSON.stringify({
-          method: CCDCryptoMethods.getSignatureBlindingRandomness,
+          method: CCDCryptoMethods.GetSignatureBlindingRandomness,
           params: {
             seedAsHex: seedAsHex,
           },
@@ -116,7 +113,7 @@ function App(): JSX.Element {
       );
       webviewRef.current.postMessage(
         JSON.stringify({
-          method: CCDCryptoMethods.getAttributeCommitmentRandomness,
+          method: CCDCryptoMethods.GetAttributeCommitmentRandomness,
           params: {
             seedAsHex: seedAsHex,
           },

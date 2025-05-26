@@ -1,123 +1,62 @@
-import {mnemonicToSeedSync, validateMnemonic} from '@scure/bip39';
 import * as wasm from './wasm/index_bg.wasm.js';
 
 import {
   __wbg_set_wasm,
-  getAccountPublicKey,
   getIdCredSec,
   getPrfKey,
+  getAccountPublicKey,
   getSignatureBlindingRandomness,
-  getAccountSigningKey,
   getAttributeCommitmentRandomness,
 } from './wasm/index_bg.js';
 
-window.onload = function () {
-  window.ReactNativeWebView?.postMessage(
-    JSON.stringify({type: 'ready', message: {type: 'ready'}}),
-  );
-};
-
-// getAccountSigningKey
-// getAccountPublicKey
-// getCredentialId
-// getPrfKey
-// getIdCredSec
-// getSignatureBlindingRandomness
-// getAttributeCommitmentRandomness
-
 enum CCDCryptoMethods {
-  getAccountSigningKey = 'getAccountSigningKey',
-  getAccountPublicKey = 'getAccountPublicKey',
-  getPrfKey = 'getPrfKey',
-  getIdCredSec = 'getIdCredSec',
-  getSignatureBlindingRandomness = 'getSignatureBlindingRandomness',
-  getAttributeCommitmentRandomness = 'getAttributeCommitmentRandomness',
+  GetAccountSigningKey = 'getAccountSigningKey',
+  GetAccountPublicKey = 'getAccountPublicKey',
+  GetPrfKey = 'getPrfKey',
+  GetIdCredSec = 'getIdCredSec',
+  GetSignatureBlindingRandomness = 'getSignatureBlindingRandomness',
+  GetAttributeCommitmentRandomness = 'getAttributeCommitmentRandomness',
 }
 
 __wbg_set_wasm(wasm);
 
-// const method = () => {
-//   try {
-//     const seedAsHex = Buffer.from(
-//       mnemonicToSeedSync(
-//         'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
-//       ),
-//     ).toString('hex');
+enum MessageType {
+  SUCCESS = 'success',
+  ERROR = 'error',
+}
 
-//     const keys = {
-//       idCredSec: getIdCredSec(seedAsHex, 'Testnet', 0, 0).toString('hex'),
-//       prfKey: getPrfKey(seedAsHex, 'Testnet', 0, 0).toString('hex'),
-//       blindingRandomness: getSignatureBlindingRandomness(
-//         seedAsHex,
-//         'Testnet',
-//         0,
-//         0,
-//       ).toString('hex'),
-//     };
-
-//     const pubKey = getAccountPublicKey(seedAsHex, 'Testnet', 0, 0, 0).toString(
-//       'hex',
-//     );
-
-//     const signingKey = getAccountSigningKey(
-//       seedAsHex,
-//       'Testnet',
-//       0,
-//       0,
-//       0,
-//     ).toString('hex');
-
-//     const attributeRandomness = getAttributeCommitmentRandomness(
-//       seedAsHex,
-//       'Testnet',
-//       0,
-//       0,
-//       0,
-//       0,
-//     );
-
-//     window.ReactNativeWebView?.postMessage(
-//       JSON.stringify({
-//         type: 'success',
-//         message: 'Method executed successfully',
-//         wasmSupport: !!window.WebAssembly,
-//         pubKey: pubKey,
-//         keys: keys,
-//         signingKey: signingKey,
-//         attributeRandomness: attributeRandomness,
-//       }),
-//     );
-//   } catch (error) {
-//     alert(error);
-
-//     window.ReactNativeWebView?.postMessage(
-//       JSON.stringify({type: 'error', message: error}),
-//     );
-//   }
-// };
-
-const postMessage = (message: {result: any; type: CCDCryptoMethods}) => {
+const postMessage = (
+  message: {result: any; method?: CCDCryptoMethods},
+  type: MessageType = MessageType.SUCCESS,
+) => {
   window.ReactNativeWebView?.postMessage(
     JSON.stringify({
-      type: 'success',
       message: message,
+      type,
     }),
   );
 };
 
-const GetAccountPublicKey = ({seedAsHex}: {seedAsHex: string}) => {
+const GetAccountPublicKey = ({
+  seedAsHex,
+}: {
+  seedAsHex: string;
+  network: string;
+}) => {
   try {
     const pubKey = getAccountPublicKey(seedAsHex, 'Testnet', 0, 0, 0).toString(
       'hex',
     );
     postMessage({
       result: pubKey,
-      type: CCDCryptoMethods.getAccountPublicKey,
+      method: CCDCryptoMethods.GetAccountPublicKey,
     });
   } catch (error) {
-    alert(error);
-    window.ReactNativeWebView?.postMessage(
-      JSON.stringify({type: 'error', message: error}),
+    postMessage(
+      {
+        result: error,
+      },
+      MessageType.ERROR,
     );
   }
 };
@@ -126,57 +65,85 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
   try {
     const idCredSec = getIdCredSec(seedAsHex, 'Testnet', 0, 0).toString('hex');
 
-    postMessage({
-      result: idCredSec,
-      type: CCDCryptoMethods.getIdCredSec,
-    });
+    postMessage(
+      {
+        result: idCredSec,
+        method: CCDCryptoMethods.GetIdCredSec,
+      },
+      MessageType.SUCCESS,
+    );
   } catch (error) {
-    window.ReactNativeWebView?.postMessage(
-      JSON.stringify({type: 'error', message: error}),
+    postMessage(
+      {
+        result: error,
+      },
+      MessageType.ERROR,
     );
   }
 };
 
-const GetPrfKey = ({ seedAsHex }: { seedAsHex: string }) => {
+const GetPrfKey = ({seedAsHex}: {seedAsHex: string}) => {
   try {
     const privKey = getPrfKey(seedAsHex, 'Testnet', 0, 0).toString('hex');
 
     postMessage({
       result: privKey,
-      type: CCDCryptoMethods.getPrfKey,
+      method: CCDCryptoMethods.GetPrfKey,
     });
   } catch (error) {
-    window.ReactNativeWebView?.postMessage(
-      JSON.stringify({ type: 'error', message: error }),
-    );
-  }
-};
-const GetSignatureBlindingRandomness = ({ seedAsHex }: { seedAsHex: string }) => {
-  try {
-    const randomSignature = getSignatureBlindingRandomness(seedAsHex, 'Testnet', '', 0, 0).toString('hex');
-
-    postMessage({
-      result: randomSignature,
-      type: CCDCryptoMethods.getSignatureBlindingRandomness,
-    });
-  } catch (error) {
-    window.ReactNativeWebView?.postMessage(
-      JSON.stringify({ type: 'error', message: error }),
+    postMessage(
+      {
+        result: error,
+      },
+      MessageType.ERROR,
     );
   }
 };
 
-const GetAttributeCommitmentRandomness = ({ seedAsHex }: { seedAsHex: string }) => {
+const GetSignatureBlindingRandomness = ({seedAsHex}: {seedAsHex: string}) => {
   try {
-    const randomSignature = getAttributeCommitmentRandomness(seedAsHex, 'Testnet', 0, 0, 0, 0).toString('hex');
+    const randomSignature = getSignatureBlindingRandomness(
+      seedAsHex,
+      'Testnet',
+      0,
+      0,
+    ).toString('hex');
 
     postMessage({
       result: randomSignature,
-      type: CCDCryptoMethods.getAttributeCommitmentRandomness,
+      method: CCDCryptoMethods.GetSignatureBlindingRandomness,
     });
   } catch (error) {
-    window.ReactNativeWebView?.postMessage(
-      JSON.stringify({ type: 'error', message: error }),
+    postMessage(
+      {
+        result: error,
+      },
+      MessageType.ERROR,
+    );
+  }
+};
+
+const GetAttributeCommitmentRandomness = ({seedAsHex}: {seedAsHex: string}) => {
+  try {
+    const randomSignature = getAttributeCommitmentRandomness(
+      seedAsHex,
+      'Testnet',
+      0,
+      0,
+      0,
+      0,
+    ).toString('hex');
+
+    postMessage({
+      result: randomSignature,
+      method: CCDCryptoMethods.GetAttributeCommitmentRandomness,
+    });
+  } catch (error) {
+    postMessage(
+      {
+        result: error,
+      },
+      MessageType.ERROR,
     );
   }
 };
@@ -188,27 +155,27 @@ document.addEventListener('message', async function (event: any) {
   }
 
   switch (data.method) {
-    case CCDCryptoMethods.getAccountPublicKey: {
+    case CCDCryptoMethods.GetAccountPublicKey: {
       GetAccountPublicKey(data.params);
       break;
     }
-    case CCDCryptoMethods.getIdCredSec: {
+    case CCDCryptoMethods.GetIdCredSec: {
       GetIdCredSec(data.params);
       break;
     }
-    case CCDCryptoMethods.getPrfKey: {
-      GetPrfKey(data.params)
+    case CCDCryptoMethods.GetPrfKey: {
+      GetPrfKey(data.params);
+      break;
     }
-    case CCDCryptoMethods.getSignatureBlindingRandomness: {
-      GetSignatureBlindingRandomness(data.params)
+    case CCDCryptoMethods.GetSignatureBlindingRandomness: {
+      GetSignatureBlindingRandomness(data.params);
+      break;
     }
-    case CCDCryptoMethods.getAttributeCommitmentRandomness: {
-      GetAttributeCommitmentRandomness(data.params)
+    case CCDCryptoMethods.GetAttributeCommitmentRandomness: {
+      GetAttributeCommitmentRandomness(data.params);
+      break;
     }
-
     default: {
     }
   }
-  // method();
-  // Reply back
 });
