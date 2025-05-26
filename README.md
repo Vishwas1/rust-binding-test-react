@@ -15,13 +15,19 @@ This is a React Native project.
 yarn install
 ```
 
-### Step 2: Start the Metro Bundler
+### Step 2: Build 
+
+```bash
+node build.js
+```
+
+### Step 3: Start the Metro Bundler
 
 ```bash
 yarn start
 ```
 
-### Step 3: Run the Application
+### Step 4: Run the Application
 
 Let Metro Bundler run in its own terminal. Open a new terminal from the root of your React Native project.
 
