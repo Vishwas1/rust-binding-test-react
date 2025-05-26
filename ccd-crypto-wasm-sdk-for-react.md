@@ -2,7 +2,7 @@
 
 ### Installation 
 
-Download the [ccd-crypto-sdk-for-react-native.js](/https://raw.githubusercontent.com/Vishwas1/rust-binding-test-react/refs/heads/refactor/android/app/src/main/assets/ccd-crypto-sdk-for-react-native.js) and put it android/app/src/main/assets folder. 
+Download the [ccd-crypto-sdk-for-react-native.js](https://raw.githubusercontent.com/Vishwas1/rust-binding-test-react/refs/heads/refactor/android/app/src/main/assets/ccd-crypto-sdk-for-react-native.js) and put it android/app/src/main/assets folder. 
 
 Create index.html file in android/app/src/main/assets folder. Inside index.html add the following code
 
