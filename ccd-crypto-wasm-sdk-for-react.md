@@ -1,16 +1,30 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+## CCD Crypto SDK For React Native
 
-import React, { useRef } from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import WebView from 'react-native-webview';
-import { mnemonicToSeedSync } from '@scure/bip39';
-import { Buffer } from 'buffer';
+### Installation 
 
+Download the [ccd-crypto-sdk-for-react-native.js](/https://raw.githubusercontent.com/Vishwas1/rust-binding-test-react/refs/heads/refactor/android/app/src/main/assets/ccd-crypto-sdk-for-react-native.js) and put it android/app/src/main/assets folder. 
+
+Create index.html file in android/app/src/main/assets folder. Inside index.html add the following code
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+   <script src="./ ccd-crypto-sdk-for-react-native.js"></script>
+   </head>
+   <body>
+   </body>
+</html>
+```
+
+### Usage
+
+Use crypto function in your react native through webview like this: 
+
+```js
 enum CCDCryptoMethods {
   GetAccountSigningKey = 'getAccountSigningKey',
   GetAccountPublicKey = 'getAccountPublicKey',
@@ -34,27 +48,11 @@ function App(): JSX.Element {
 
       // if no error then ...
       switch (data.message.method) {
-        case CCDCryptoMethods.GetAccountSigningKey: {
-          console.log(data.message.result);
-          break;
-        }
         case CCDCryptoMethods.GetAccountPublicKey: {
           console.log(data.message.result);
           break;
         }
-        case CCDCryptoMethods.GetPrfKey: {
-          console.log(data.message.result);
-          break;
-        }
         case CCDCryptoMethods.GetIdCredSec: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetSignatureBlindingRandomness: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetAttributeCommitmentRandomness: {
           console.log(data.message.result);
           break;
         }
@@ -92,33 +90,6 @@ function App(): JSX.Element {
           },
         }),
       );
-
-
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetPrfKey,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
-
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetSignatureBlindingRandomness,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetAttributeCommitmentRandomness,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
     }
   };
 
@@ -144,30 +115,13 @@ function App(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    alignContent: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f8f8f8',
-    padding: 10,
-    width: '30%',
-    alignSelf: 'center',
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
 export default App;
+
+
+```
+
+### Note: 
+
+- This is just for explanation, the CCD Crypto SDK For React Native is not full fledge SDK developed.
+- This way a react devs can consume wasm based crypto functions in reactive native.
+
