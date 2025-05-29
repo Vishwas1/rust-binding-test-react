@@ -13,7 +13,7 @@ Create index.html file in `android/app/src/main/assets` folder. Inside `index.ht
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-   <script src="./ ccd-crypto-sdk-for-react-native.js"></script>
+   <script src="./ccd-crypto-sdk-for-react-native.js"></script>
    </head>
    <body>
    </body>
