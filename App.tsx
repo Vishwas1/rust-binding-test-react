@@ -1,15 +1,18 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React, { useRef } from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  NativeModules,
+  NativeEventEmitter,
+} from 'react-native';
 import WebView from 'react-native-webview';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { Buffer } from 'buffer';
+
+const { WasmSyncBridge } = NativeModules;
+const wasmBridgeEmitter = new NativeEventEmitter(WasmSyncBridge);
 
 enum CCDCryptoMethods {
   GetAccountSigningKey = 'getAccountSigningKey',
@@ -21,122 +24,114 @@ enum CCDCryptoMethods {
 }
 
 function App(): JSX.Element {
-  const webviewRef = useRef(null);
+  const webviewRef = useRef<any>(null);
 
-  const handleMessage = (event: any) => {
-    try {
-      console.log('global Log', event.nativeEvent.data);
-      let data = event.nativeEvent.data;
-      if (data) {
-        data = JSON.parse(data);
+  useEffect(() => {
+    const sub = wasmBridgeEmitter.addListener('WasmBridgeRequest', (event) => {
+      console.log('Received event from native:', event);
+      const data = JSON.parse(event.data);
+      console.log(data, 'data')
+      if (webviewRef.current) {
+        webviewRef.current.postMessage(
+          JSON.stringify({
+            method: data.method,
+            params: data.params,
+          }),
+        );
       }
-      // handle error here.
+    });
 
-      // if no error then ...
+    return () => sub.remove();
+  }, []);
+  const handleMessage = async (event: any) => {
+    try {
+      const raw = event.nativeEvent.data;
+      const data = JSON.parse(raw);
+      console.log('WebView Response:', data);
+
+      // Respond to native
+      if (data.message?.method) {
+        WasmSyncBridge.setResponse(JSON.stringify(data.message));
+      }
+
+      // Optional: log per method
       switch (data.message.method) {
-        case CCDCryptoMethods.GetAccountSigningKey: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetAccountPublicKey: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetPrfKey: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetIdCredSec: {
-          console.log(data.message.result);
-          break;
-        }
-        case CCDCryptoMethods.GetSignatureBlindingRandomness: {
-          console.log(data.message.result);
-          break;
-        }
+        case CCDCryptoMethods.GetAccountSigningKey:
+        case CCDCryptoMethods.GetAccountPublicKey:
+        case CCDCryptoMethods.GetPrfKey:
+        case CCDCryptoMethods.GetIdCredSec:
+        case CCDCryptoMethods.GetSignatureBlindingRandomness:
         case CCDCryptoMethods.GetAttributeCommitmentRandomness: {
-          console.log(data.message.result);
+          console.log(`${data.message.method}:`, data.message.result);
           break;
         }
-        default: {
-          console.log('Inside handleMessage default case');
-        }
+        default:
+          console.warn('Unknown method:', data.message.method);
       }
     } catch (e) {
-      console.error(e.message);
+      console.error('handleMessage error:', e.message);
     }
   };
 
-  const sendMesageToWebView = () => {
-    const seedAsHex =  Buffer.from(
+  const sendMesageToWebView = async () => {
+    const seedAsHex = Buffer.from(
       mnemonicToSeedSync(
         'candy maple cake sugar pudding cream honey rich smooth crumble sweet treat',
       ),
     ).toString('hex');
 
-    if (webviewRef.current) {
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetAccountPublicKey,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
+    const methods = [
+      CCDCryptoMethods.GetAccountPublicKey,
+      CCDCryptoMethods.GetIdCredSec,
+      CCDCryptoMethods.GetPrfKey,
+      CCDCryptoMethods.GetSignatureBlindingRandomness,
+      CCDCryptoMethods.GetAttributeCommitmentRandomness,
+    ];
 
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.getIdCredSec,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
+    for (const method of methods) {
+      try {
+        // Tell native to prepare for waiting (you need a native method for this)
+        await WasmSyncBridge.prepareWaiting?.();
 
+        // Send message to WebView
+        webviewRef.current?.postMessage(
+          JSON.stringify({
+            method,
+            params: { seedAsHex },
+          }),
+        );
 
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetPrfKey,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
+        // Wait on native side until response is set via WasmSyncBridge.setResponse()
+        const success = await WasmSyncBridge.waitForResponse?.(5000);
 
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetSignatureBlindingRandomness,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
-      webviewRef.current.postMessage(
-        JSON.stringify({
-          method: CCDCryptoMethods.GetAttributeCommitmentRandomness,
-          params: {
-            seedAsHex: seedAsHex,
-          },
-        }),
-      );
+        if (success) {
+          console.log(`Received response for ${method}`);
+        } else {
+          console.warn(`Timeout waiting for response for ${method}`);
+        }
+
+      } catch (err) {
+        console.error(`Error in sending message for ${method}:`, err);
+      }
+    }
+  };
+
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <TouchableOpacity
-        style={styles.sectionContainer}
-        onPress={sendMesageToWebView}>
+      <TouchableOpacity style={styles.sectionContainer} onPress={sendMesageToWebView}>
         <Text>Click Here</Text>
       </TouchableOpacity>
       <WebView
         ref={webviewRef}
         originWhitelist={['*']}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        allowFileAccess={true}
-        allowUniversalAccessFromFileURLs={true} // Android only
-        startInLoadingState={true}
+        javaScriptEnabled
+        domStorageEnabled
+        allowFileAccess
+        allowUniversalAccessFromFileURLs
+        startInLoadingState
         onMessage={handleMessage}
         source={{ uri: 'file:///android_asset/index.html' }}
       />

@@ -42,3 +42,24 @@ yarn android
 ```bash
 yarn ios
 ```
+
+
+## Making function syncronous
+When the user clicks the button, the React Native app sends a message to the WebView and waits for a response before continuing. Here’s the step-by-step flow:
+- `Clcik Here` button is clicked
+
+   - React Native triggers a function `sendMessageToWebView`.
+
+   - It send multiple messages
+- React native prepare to wait for a response using  `WasmSyncBridge.prepareWaiting()`. This tells the native Kotline code to get ready to pause and wait until a webView response is received.
+- ReactNative sends a messsage to webView using `postMessage()`
+- WebView receive the message using `window.addEventListener('message')`. And after executing speciifc function js code send the result back to **React Native** via 
+
+    ```js
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+    method,
+    result
+    }));
+
+- React Native receive the result in `onMessage` using `handleMessage()` function and process the result. Here **native kotlin code** receive the message too and call `CountDownLatch.countDown()` to **unblock the waiting theread**
+- React Native resume after latch is released and `getWasmData()` return the result back to JS.
