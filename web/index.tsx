@@ -26,18 +26,20 @@ enum MessageType {
 }
 
 const postMessage = (
+  id: string,
   message: {result: any; method?: CCDCryptoMethods},
   type: MessageType = MessageType.SUCCESS,
 ) => {
   window.ReactNativeWebView?.postMessage(
     JSON.stringify({
+      id,
       message: message,
       type,
     }),
   );
 };
 
-const GetAccountPublicKey = ({
+const GetAccountPublicKey = (id: string, {
   seedAsHex,
 }: {
   seedAsHex: string;
@@ -47,12 +49,12 @@ const GetAccountPublicKey = ({
     const pubKey = getAccountPublicKey(seedAsHex, 'Testnet', 0, 0, 0).toString(
       'hex',
     );
-    postMessage({
+    postMessage(id, {
       result: pubKey,
       method: CCDCryptoMethods.GetAccountPublicKey,
     });
   } catch (error) {
-    postMessage(
+    postMessage(id,
       {
         result: error,
       },
@@ -61,11 +63,11 @@ const GetAccountPublicKey = ({
   }
 };
 
-const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
+const GetIdCredSec = (id: string, { seedAsHex }: { seedAsHex: string }) => {
   try {
     const idCredSec = getIdCredSec(seedAsHex, 'Testnet', 0, 0).toString('hex');
 
-    postMessage(
+    postMessage(id,
       {
         result: idCredSec,
         method: CCDCryptoMethods.GetIdCredSec,
@@ -74,6 +76,7 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
     );
   } catch (error) {
     postMessage(
+      id,
       {
         result: error,
       },
@@ -82,16 +85,16 @@ const GetIdCredSec = ({seedAsHex}: {seedAsHex: string}) => {
   }
 };
 
-const GetPrfKey = ({seedAsHex}: {seedAsHex: string}) => {
+const GetPrfKey = (id: string, { seedAsHex }: { seedAsHex: string }) => {
   try {
     const privKey = getPrfKey(seedAsHex, 'Testnet', 0, 0).toString('hex');
 
-    postMessage({
+    postMessage(id, {
       result: privKey,
       method: CCDCryptoMethods.GetPrfKey,
     });
   } catch (error) {
-    postMessage(
+    postMessage(id,
       {
         result: error,
       },
@@ -100,7 +103,7 @@ const GetPrfKey = ({seedAsHex}: {seedAsHex: string}) => {
   }
 };
 
-const GetSignatureBlindingRandomness = ({seedAsHex}: {seedAsHex: string}) => {
+const GetSignatureBlindingRandomness = (id: string, { seedAsHex }: { seedAsHex: string }) => {
   try {
     const randomSignature = getSignatureBlindingRandomness(
       seedAsHex,
@@ -109,12 +112,12 @@ const GetSignatureBlindingRandomness = ({seedAsHex}: {seedAsHex: string}) => {
       0,
     ).toString('hex');
 
-    postMessage({
+    postMessage(id, {
       result: randomSignature,
       method: CCDCryptoMethods.GetSignatureBlindingRandomness,
     });
   } catch (error) {
-    postMessage(
+    postMessage(id,
       {
         result: error,
       },
@@ -123,7 +126,7 @@ const GetSignatureBlindingRandomness = ({seedAsHex}: {seedAsHex: string}) => {
   }
 };
 
-const GetAttributeCommitmentRandomness = ({seedAsHex}: {seedAsHex: string}) => {
+const GetAttributeCommitmentRandomness = (id: string, { seedAsHex }: { seedAsHex: string }) => {
   try {
     const randomSignature = getAttributeCommitmentRandomness(
       seedAsHex,
@@ -134,12 +137,13 @@ const GetAttributeCommitmentRandomness = ({seedAsHex}: {seedAsHex: string}) => {
       0,
     ).toString('hex');
 
-    postMessage({
+    postMessage(id, {
       result: randomSignature,
       method: CCDCryptoMethods.GetAttributeCommitmentRandomness,
     });
   } catch (error) {
     postMessage(
+      id,
       {
         result: error,
       },
@@ -156,26 +160,27 @@ document.addEventListener('message', async function (event: any) {
 
   switch (data.method) {
     case CCDCryptoMethods.GetAccountPublicKey: {
-      GetAccountPublicKey(data.params);
+      GetAccountPublicKey(data.id, data.params);
       break;
     }
     case CCDCryptoMethods.GetIdCredSec: {
-      GetIdCredSec(data.params);
+      GetIdCredSec(data.id, data.params);
       break;
     }
     case CCDCryptoMethods.GetPrfKey: {
-      GetPrfKey(data.params);
+      GetPrfKey(data.id, data.params);
       break;
     }
     case CCDCryptoMethods.GetSignatureBlindingRandomness: {
-      GetSignatureBlindingRandomness(data.params);
+      GetSignatureBlindingRandomness(data.id, data.params);
       break;
     }
     case CCDCryptoMethods.GetAttributeCommitmentRandomness: {
-      GetAttributeCommitmentRandomness(data.params);
+      GetAttributeCommitmentRandomness(data.id, data.params);
       break;
     }
     default: {
     }
   }
 });
+
