@@ -42,8 +42,26 @@ function App(): JSX.Element {
       if (id && pendingPromises.current[id]) {
         pendingPromises.current[id](message.result); // resolve the promise
         delete pendingPromises.current[id];
-      } else {
-        console.log('No matching promise for id:', id);
+      }
+
+      switch (message.method) {
+        case CCDCryptoMethods.GetAccountPublicKey:
+          console.log('GetAccountPublicKey:', message.result);
+          break;
+        case CCDCryptoMethods.GetIdCredSec:
+          console.log('GetIdCredSec:', message.result);
+          break;
+        case CCDCryptoMethods.GetPrfKey:
+          console.log('GetPrfKey:', message.result);
+          break;
+        case CCDCryptoMethods.GetSignatureBlindingRandomness:
+          console.log('GetSignatureBlindingRandomness:', message.result);
+          break;
+        case CCDCryptoMethods.GetAttributeCommitmentRandomness:
+          console.log('GetAttributeCommitmentRandomness:', message.result);
+          break;
+        default:
+          console.log('Unhandled method:', message.method);
       }
     } catch (e) {
       console.error('handleMessage error:', e);
@@ -72,16 +90,11 @@ function App(): JSX.Element {
       ),
     ).toString('hex');
     try {
-      const pubKey = await sendMessageAndWait(CCDCryptoMethods.GetAccountPublicKey, { seedAsHex });
-      console.log('GetAccountPublicKey:', pubKey);
-      const idCredSec = await sendMessageAndWait(CCDCryptoMethods.GetIdCredSec, { seedAsHex });
-      console.log('GetIdCredSec:', idCredSec);
-      const signatureBlindness = await sendMessageAndWait(CCDCryptoMethods.GetSignatureBlindingRandomness, { seedAsHex });
-      console.log('GetSignatureBlindingRandomness:', signatureBlindness);
-      const attributeCommitmentRandomness = await sendMessageAndWait(CCDCryptoMethods.GetAttributeCommitmentRandomness, { seedAsHex });
-      console.log('GetAttributeCommitmentRandomness:', attributeCommitmentRandomness);
-      const prfKey = await sendMessageAndWait(CCDCryptoMethods.GetPrfKey, { seedAsHex });
-      console.log('GetPrfKey:', prfKey);
+      await sendMessageAndWait(CCDCryptoMethods.GetAccountPublicKey, { seedAsHex });
+      await sendMessageAndWait(CCDCryptoMethods.GetIdCredSec, { seedAsHex });
+      await sendMessageAndWait(CCDCryptoMethods.GetSignatureBlindingRandomness, { seedAsHex });
+      await sendMessageAndWait(CCDCryptoMethods.GetAttributeCommitmentRandomness, { seedAsHex });
+      await sendMessageAndWait(CCDCryptoMethods.GetPrfKey, { seedAsHex });
 
       // similarly for other methods...
     } catch (error) {
